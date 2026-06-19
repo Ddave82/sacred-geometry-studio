@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Sacred Geometry Studio is a browser-based creative tool for procedural geometric artwork."
+    />
+    <title>Sacred Geometry Studio</title>
+  </head>
+  <body>
+    <div id="app" class="studio-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>Sacred Geometry Studio</h1>
+            <p>Procedural SVG artwork generator</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="seed-control" for="seedInput">
+            <span>Seed</span>
+            <input id="seedInput" type="text" spellcheck="false" autocomplete="off" />
+          </label>
+          <button id="applySeedButton" class="button button-ghost" type="button">Regenerate</button>
+          <button id="randomizeButton" class="button button-primary" type="button">Random Design</button>
+          <button id="resetButton" class="button button-ghost" type="button">Reset</button>
+          <button id="exportSvgButton" class="button button-ghost" type="button">SVG</button>
+          <button id="exportPngButton" class="button button-ghost" type="button">PNG</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="preview-column" aria-label="Artwork preview">
+          <div class="preview-header">
+            <div>
+              <span class="eyebrow">Live Preview</span>
+              <h2 id="previewTitle">Ancient Gold</h2>
+            </div>
+            <div class="preview-meta">
+              <span id="previewAspect">Square 1:1</span>
+              <span id="previewPattern">Flower of Life</span>
+            </div>
+          </div>
+
+          <div class="gallery-stage">
+            <div id="artworkFrame" class="artwork-frame">
+              <div id="artworkMount" class="artwork-mount"></div>
+            </div>
+          </div>
+
+          <aside class="info-panel">
+            <span class="eyebrow">Geometry</span>
+            <p id="patternDescription"></p>
+          </aside>
+        </section>
+
+        <aside class="control-panel" aria-label="Artwork controls">
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Mood Presets</span>
+              <h2>Visual System</h2>
+            </div>
+            <div id="moodPresetGrid" class="preset-grid"></div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Pattern</span>
+              <h2>Geometry Layer</h2>
+            </div>
+            <div class="control-grid">
+              <label class="field field-full" for="patternSelect">
+                <span>Pattern Type</span>
+                <select id="patternSelect" data-bind="pattern"></select>
+              </label>
+
+              <label class="field" for="complexityInput">
+                <span>Rings / Complexity <output id="complexityValue"></output></span>
+                <input id="complexityInput" data-bind="complexity" type="range" min="1" max="7" step="1" />
+              </label>
+
+              <label class="field" for="scaleInput">
+                <span>Radius / Scale <output id="scaleValue"></output></span>
+                <input id="scaleInput" data-bind="scale" type="range" min="55" max="112" step="1" />
+              </label>
+
+              <label class="field" for="rotationInput">
+                <span>Rotation <output id="rotationValue"></output></span>
+                <input id="rotationInput" data-bind="rotation" type="range" min="0" max="359" step="1" />
+              </label>
+
+              <label class="field" for="symmetryInput">
+                <span>Symmetry <output id="symmetryValue"></output></span>
+                <input id="symmetryInput" data-bind="symmetry" type="range" min="5" max="24" step="1" />
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Ink</span>
+              <h2>Stroke & Light</h2>
+            </div>
+            <div class="control-grid">
+              <label class="field color-field" for="strokeColorInput">
+                <span>Stroke Color</span>
+                <input id="strokeColorInput" data-bind="strokeColor" type="color" />
+              </label>
+
+              <label class="field color-field" for="secondaryColorInput">
+                <span>Secondary Color</span>
+                <input id="secondaryColorInput" data-bind="secondaryColor" type="color" />
+              </label>
+
+              <label class="field" for="strokeWidthInput">
+                <span>Stroke Width <output id="strokeWidthValue"></output></span>
+                <input id="strokeWidthInput" data-bind="strokeWidth" type="range" min="0.8" max="8" step="0.1" />
+              </label>
+
+              <label class="field" for="strokeOpacityInput">
+                <span>Stroke Opacity <output id="strokeOpacityValue"></output></span>
+                <input id="strokeOpacityInput" data-bind="strokeOpacity" type="range" min="0.2" max="1" step="0.01" />
+              </label>
+
+              <label class="field" for="fillOpacityInput">
+                <span>Fill Opacity <output id="fillOpacityValue"></output></span>
+                <input id="fillOpacityInput" data-bind="fillOpacity" type="range" min="0" max="0.45" step="0.01" />
+              </label>
+
+              <label class="field" for="glowStrengthInput">
+                <span>Glow Strength <output id="glowStrengthValue"></output></span>
+                <input id="glowStrengthInput" data-bind="glowStrength" type="range" min="0" max="14" step="0.5" />
+              </label>
+
+              <label class="toggle-field" for="fillEnabledInput">
+                <input id="fillEnabledInput" data-bind="fillEnabled" type="checkbox" />
+                <span>Fill</span>
+              </label>
+
+              <label class="toggle-field" for="centerEmphasisInput">
+                <input id="centerEmphasisInput" data-bind="centerEmphasis" type="checkbox" />
+                <span>Center Emphasis</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Layers</span>
+              <h2>Overlay System</h2>
+            </div>
+            <div class="control-grid">
+              <label class="toggle-field field-full" for="overlayEnabledInput">
+                <input id="overlayEnabledInput" data-bind="overlayEnabled" type="checkbox" />
+                <span>Secondary Overlay</span>
+              </label>
+
+              <label class="field field-full" for="overlayPatternSelect">
+                <span>Overlay Pattern</span>
+                <select id="overlayPatternSelect" data-bind="overlayPattern"></select>
+              </label>
+
+              <label class="field" for="overlayOpacityInput">
+                <span>Overlay Opacity <output id="overlayOpacityValue"></output></span>
+                <input id="overlayOpacityInput" data-bind="overlayOpacity" type="range" min="0.08" max="0.7" step="0.01" />
+              </label>
+
+              <label class="field" for="overlayScaleInput">
+                <span>Overlay Size <output id="overlayScaleValue"></output></span>
+                <input id="overlayScaleInput" data-bind="overlayScale" type="range" min="25" max="180" step="1" />
+              </label>
+
+              <label class="field" for="overlayComplexityInput">
+                <span>Overlay Complexity <output id="overlayComplexityValue"></output></span>
+                <input id="overlayComplexityInput" data-bind="overlayComplexity" type="range" min="1" max="7" step="1" />
+              </label>
+
+              <label class="field" for="overlaySymmetryInput">
+                <span>Overlay Symmetry <output id="overlaySymmetryValue"></output></span>
+                <input id="overlaySymmetryInput" data-bind="overlaySymmetry" type="range" min="5" max="24" step="1" />
+              </label>
+
+              <label class="field" for="overlayRotationInput">
+                <span>Overlay Rotation <output id="overlayRotationValue"></output></span>
+                <input id="overlayRotationInput" data-bind="overlayRotation" type="range" min="0" max="359" step="1" />
+              </label>
+
+              <label class="toggle-field field-full" for="centerSymbolEnabledInput">
+                <input id="centerSymbolEnabledInput" data-bind="centerSymbolEnabled" type="checkbox" />
+                <span>Center Symbol Layer</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Ground</span>
+              <h2>Artwork Background</h2>
+            </div>
+            <div class="control-grid">
+              <label class="field field-full" for="backgroundPresetSelect">
+                <span>Background Preset</span>
+                <select id="backgroundPresetSelect" data-bind="backgroundPreset"></select>
+              </label>
+
+              <label class="field color-field" for="backgroundColor1Input">
+                <span>Color 1</span>
+                <input id="backgroundColor1Input" data-bind="backgroundColor1" type="color" />
+              </label>
+
+              <label class="field color-field" for="backgroundColor2Input">
+                <span>Color 2</span>
+                <input id="backgroundColor2Input" data-bind="backgroundColor2" type="color" />
+              </label>
+
+              <label class="toggle-field" for="vignetteInput">
+                <input id="vignetteInput" data-bind="vignette" type="checkbox" />
+                <span>Vignette</span>
+              </label>
+
+              <label class="toggle-field" for="grainInput">
+                <input id="grainInput" data-bind="grain" type="checkbox" />
+                <span>Subtle Grain</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Export</span>
+              <h2>Output</h2>
+            </div>
+            <div class="control-grid">
+              <label class="field" for="aspectRatioSelect">
+                <span>Aspect Ratio</span>
+                <select id="aspectRatioSelect" data-bind="aspectRatio"></select>
+              </label>
+
+              <label class="field" for="exportSizeSelect">
+                <span>PNG Size</span>
+                <select id="exportSizeSelect" data-bind="exportSize">
+                  <option value="1024">1024 px</option>
+                  <option value="2048">2048 px</option>
+                  <option value="4096">4096 px</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Local Presets</span>
+              <h2>Saved Designs</h2>
+            </div>
+            <div class="save-row">
+              <input id="presetNameInput" type="text" maxlength="48" placeholder="Preset name" />
+              <button id="savePresetButton" class="button button-primary" type="button">Save</button>
+            </div>
+            <div class="save-row">
+              <select id="savedPresetSelect"></select>
+              <button id="loadPresetButton" class="button button-ghost" type="button">Load</button>
+              <button id="deletePresetButton" class="button button-danger" type="button">Delete</button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
