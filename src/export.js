@@ -2,9 +2,10 @@ import { getSupportedVideoType, supportsVideoExport } from './animation.js';
 import { createGifEncoder, imageDataToRgb332Indices } from './gif.js';
 import { getExportDimensions, renderArtworkSvg } from './renderer.js';
 
-const GIF_MAX_DIMENSION = 960;
 const GIF_MAX_FRAMES = 180;
 const GIF_MAX_FPS = 18;
+const GIF_MIN_SIZE = 320;
+const GIF_MAX_SIZE = 2048;
 
 export function exportSvg(state) {
   const { width, height } = getExportDimensions(state);
@@ -108,7 +109,8 @@ export async function exportVideo(state, { format = 'webm', allowFallback = fals
 }
 
 export async function exportGif(state, { onProgress } = {}) {
-  const { width, height } = getCappedDimensions(getExportDimensions(state), GIF_MAX_DIMENSION);
+  const gifSize = clamp(Number(state.gifSize) || 960, GIF_MIN_SIZE, GIF_MAX_SIZE);
+  const { width, height } = getCappedDimensions(getExportDimensions(state), gifSize);
   const duration = clamp(Number(state.animationDuration) || 6, 2, 20);
   const requestedFps = clamp(Number(state.animationFps) || 30, 6, 60);
   const fps = Math.max(6, Math.min(GIF_MAX_FPS, requestedFps, Math.floor(GIF_MAX_FRAMES / duration)));

@@ -139,6 +139,7 @@ export const DEFAULT_STATE = {
   animationDuration: 6,
   animationFps: 30,
   animationStrength: 60,
+  gifSize: 960,
 };
 
 export function createDefaultState() {
@@ -181,6 +182,7 @@ export function sanitizeState(input) {
   state.animationDuration = clampNumber(state.animationDuration, 2, 20);
   state.animationFps = clampNumber(state.animationFps, 12, 60);
   state.animationStrength = clampNumber(state.animationStrength, 0, 100);
+  state.gifSize = clampNumber(state.gifSize, 320, 2048);
   state.animationPreviewEnabled = Boolean(state.animationPreviewEnabled);
   if (!ANIMATION_PRESETS.some((preset) => preset.id === state.animationPreset)) {
     state.animationPreset = DEFAULT_STATE.animationPreset;

@@ -53,7 +53,7 @@ The editor exposes practical controls for producing finished artwork rather than
 - Pattern-specific symmetry controls
 - Independent overlay pattern, size, complexity, symmetry, rotation, and opacity
 - Background presets, colors, vignette, and subtle grain
-- Animation preset, duration, FPS, motion strength, preview toggle, and video format
+- Animation preset, duration, FPS, motion strength, GIF pixel size, preview toggle, and export format buttons
 
 Controls that do not apply to a selected pattern are disabled instead of pretending to change the geometry. For example, Metatron's Cube has fixed six-fold symmetry, while Radial Mandala and Star Grid expose free symmetry control.
 
@@ -133,4 +133,4 @@ src/
 
 ## Status
 
-The current build is a browser-only creative tool for still artwork and lightweight motion export. GIF and WebM are the most reliable browser targets. MP4 is used when the active browser exposes MP4 recording through `MediaRecorder`; browsers that do not support native MP4 recording will show that clearly instead of silently saving WebM. MOV export is not included because browsers do not provide a practical native MOV encoder, and adding one would require a much heavier ffmpeg/WASM pipeline.
+The current build is a browser-only creative tool for still artwork and lightweight motion export. GIF and WebM are the most reliable browser targets. GIF export has its own pixel-size control for the longest edge while preserving the selected aspect ratio. MP4 is used when the active browser exposes MP4 recording through `MediaRecorder`; browsers that do not support native MP4 recording will show that clearly instead of silently saving WebM. MOV export is not included because browsers do not provide a practical native MOV encoder, and adding one would require a much heavier ffmpeg/WASM pipeline.

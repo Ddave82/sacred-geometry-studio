@@ -260,6 +260,11 @@
                 <input id="animationStrengthInput" data-bind="animationStrength" type="range" min="0" max="100" step="1" />
               </label>
 
+              <label class="field" for="gifSizeInput">
+                <span>GIF Size <output id="gifSizeValue"></output></span>
+                <input id="gifSizeInput" data-bind="gifSize" type="number" min="320" max="2048" step="16" inputmode="numeric" />
+              </label>
+
               <div class="video-export-row field-full">
                 <button id="exportGifButton" class="button button-primary" type="button">GIF</button>
                 <button id="exportWebmButton" class="button button-ghost" type="button">WebM</button>

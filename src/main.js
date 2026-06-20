@@ -60,6 +60,7 @@ const numericKeys = new Set([
   'animationDuration',
   'animationFps',
   'animationStrength',
+  'gifSize',
 ]);
 
 const checkboxKeys = new Set([
@@ -89,6 +90,7 @@ const outputs = {
   animationDuration: document.querySelector('#animationDurationValue'),
   animationFps: document.querySelector('#animationFpsValue'),
   animationStrength: document.querySelector('#animationStrengthValue'),
+  gifSize: document.querySelector('#gifSizeValue'),
 };
 
 init();
@@ -127,7 +129,7 @@ function renderMoodPresetButtons() {
 
 function bindControlEvents() {
   bindings.forEach((control) => {
-    const eventName = control.matches('input[type="range"], input[type="color"]') ? 'input' : 'change';
+    const eventName = control.matches('input[type="range"], input[type="color"], input[type="number"]') ? 'input' : 'change';
     control.addEventListener(eventName, () => {
       const key = control.dataset.bind;
       let value = control.value;
@@ -237,6 +239,7 @@ function syncOutputs() {
   outputs.animationDuration.textContent = `${state.animationDuration}s`;
   outputs.animationFps.textContent = state.animationFps;
   outputs.animationStrength.textContent = `${state.animationStrength}%`;
+  outputs.gifSize.textContent = `${state.gifSize}px`;
 }
 
 function syncControlAvailability() {
@@ -351,7 +354,7 @@ async function handleMotionExport(format) {
 
     elements.videoExportStatus.textContent =
       result.extension === 'gif'
-        ? `Saved GIF at ${result.width}px`
+        ? `Saved GIF ${result.width}x${result.height}`
         : `Saved ${result.extension.toUpperCase()}`;
   } catch (error) {
     elements.videoExportStatus.textContent = error?.message || `${format.toUpperCase()} export failed`;
@@ -362,11 +365,11 @@ async function handleMotionExport(format) {
 }
 
 function handleMotionExportProgress(button, format) {
-  return ({ progress, fps, width }) => {
+  return ({ progress, fps, width, height }) => {
     const percent = Math.round(progress * 100);
     button.textContent = `${percent}%`;
     elements.videoExportStatus.textContent =
-      format === 'gif' ? `Rendering GIF ${width}px / ${fps}fps` : `Rendering ${format.toUpperCase()}`;
+      format === 'gif' ? `Rendering GIF ${width}x${height} / ${fps}fps` : `Rendering ${format.toUpperCase()}`;
   };
 }
 

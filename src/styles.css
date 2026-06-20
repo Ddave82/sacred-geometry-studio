@@ -460,7 +460,8 @@ select:focus {
 }
 
 select,
-input[type='text'] {
+input[type='text'],
+input[type='number'] {
   min-height: 40px;
   padding: 0 12px;
 }

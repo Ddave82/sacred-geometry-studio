@@ -25,7 +25,7 @@ export function createGifEncoder(width, height, { delayCs = 6, repeat = 0 } = {}
         throw new Error('GIF frame size does not match the encoder dimensions.');
       }
 
-      writer.bytes([0x21, 0xf9, 0x04, 0x08]);
+      writer.bytes([0x21, 0xf9, 0x04, 0x00]);
       writer.u16(frameDelay);
       writer.bytes([0x00, 0x00]);
       writer.byte(0x2c);
@@ -83,11 +83,10 @@ function lzwEncode(indices) {
   const clearCode = 1 << LZW_MIN_CODE_SIZE;
   const endCode = clearCode + 1;
   const output = [];
-  const dictionary = new Map();
-  let nextCode = endCode + 1;
   let codeSize = LZW_MIN_CODE_SIZE + 1;
   let bitBuffer = 0;
   let bitCount = 0;
+  let runLength = 0;
 
   const writeCode = (code) => {
     bitBuffer |= code << bitCount;
@@ -100,43 +99,24 @@ function lzwEncode(indices) {
     }
   };
 
-  const resetDictionary = () => {
-    dictionary.clear();
-    nextCode = endCode + 1;
+  const writeClearCode = () => {
     codeSize = LZW_MIN_CODE_SIZE + 1;
+    runLength = 0;
+    writeCode(clearCode);
   };
 
-  resetDictionary();
-  writeCode(clearCode);
+  writeClearCode();
 
-  let prefix = indices[0] ?? 0;
-  for (let index = 1; index < indices.length; index += 1) {
-    const current = indices[index];
-    const key = (prefix << 8) | current;
-    const existingCode = dictionary.get(key);
-
-    if (existingCode !== undefined) {
-      prefix = existingCode;
-      continue;
+  for (let index = 0; index < indices.length; index += 1) {
+    if (runLength >= 240) {
+      writeClearCode();
     }
 
-    writeCode(prefix);
-
-    if (nextCode < 4096) {
-      dictionary.set(key, nextCode);
-      nextCode += 1;
-      if (nextCode === 1 << codeSize && codeSize < 12) {
-        codeSize += 1;
-      }
-    } else {
-      writeCode(clearCode);
-      resetDictionary();
-    }
-
-    prefix = current;
+    writeCode(indices[index]);
+    runLength += 1;
   }
 
-  writeCode(prefix);
+  writeCode(clearCode);
   writeCode(endCode);
 
   if (bitCount > 0) {
