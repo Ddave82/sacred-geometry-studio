@@ -1,5 +1,10 @@
 import { getSupportedVideoType, supportsVideoExport } from './animation.js';
+import { createGifEncoder, imageDataToRgb332Indices } from './gif.js';
 import { getExportDimensions, renderArtworkSvg } from './renderer.js';
+
+const GIF_MAX_DIMENSION = 960;
+const GIF_MAX_FRAMES = 180;
+const GIF_MAX_FPS = 18;
 
 export function exportSvg(state) {
   const { width, height } = getExportDimensions(state);
@@ -33,7 +38,7 @@ export async function exportPng(state) {
   }
 }
 
-export async function exportVideo(state, { onProgress } = {}) {
+export async function exportVideo(state, { format = 'webm', allowFallback = false, onProgress } = {}) {
   if (!supportsVideoExport()) {
     throw new Error('Video export is not supported by this browser.');
   }
@@ -43,12 +48,19 @@ export async function exportVideo(state, { onProgress } = {}) {
   const fps = clamp(Number(state.animationFps) || 30, 12, 60);
   const totalFrames = Math.max(1, Math.round(duration * fps));
   const frameDelay = 1000 / fps;
-  const { mimeType, extension, requestedExtension } = getSupportedVideoType(state.animationFormat);
+  const { mimeType, extension, requestedExtension, supported } = getSupportedVideoType(format, { allowFallback });
+  if (!supported) {
+    throw new Error(`${format.toUpperCase()} export is not supported by this browser.`);
+  }
+  if (format === 'mp4' && extension !== 'mp4') {
+    throw new Error('MP4 export is not supported by this browser.');
+  }
+
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext('2d', { alpha: true });
-  const stream = canvas.captureStream(0);
+  const stream = canvas.captureStream(fps);
   const chunks = [];
   const recorderOptions = {
     videoBitsPerSecond: estimateBitrate(width, height, fps),
@@ -95,6 +107,42 @@ export async function exportVideo(state, { onProgress } = {}) {
   }
 }
 
+export async function exportGif(state, { onProgress } = {}) {
+  const { width, height } = getCappedDimensions(getExportDimensions(state), GIF_MAX_DIMENSION);
+  const duration = clamp(Number(state.animationDuration) || 6, 2, 20);
+  const requestedFps = clamp(Number(state.animationFps) || 30, 6, 60);
+  const fps = Math.max(6, Math.min(GIF_MAX_FPS, requestedFps, Math.floor(GIF_MAX_FRAMES / duration)));
+  const totalFrames = Math.max(1, Math.round(duration * fps));
+  const delayCs = Math.max(2, Math.round(100 / fps));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
+  const encoder = createGifEncoder(width, height, { delayCs });
+
+  for (let frame = 0; frame < totalFrames; frame += 1) {
+    await drawSvgFrame(context, state, width, height, frame / fps, frame);
+    const imageData = context.getImageData(0, 0, width, height);
+    encoder.addFrame(imageDataToRgb332Indices(imageData.data));
+    onProgress?.({
+      progress: (frame + 1) / totalFrames,
+      extension: 'gif',
+      requestedExtension: 'gif',
+      frame: frame + 1,
+      totalFrames,
+      fps,
+      width,
+      height,
+    });
+
+    if (frame % 3 === 2) await wait(0);
+  }
+
+  const gifBlob = encoder.finish();
+  downloadBlob(gifBlob, filename(state, 'gif'));
+  return { extension: 'gif', mimeType: 'image/gif', width, height, fps };
+}
+
 function loadImage(url) {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -125,6 +173,14 @@ async function drawSvgFrame(context, state, width, height, animationTime, frame)
 
 function estimateBitrate(width, height, fps) {
   return Math.round(clamp(width * height * fps * 0.08, 4_000_000, 36_000_000));
+}
+
+function getCappedDimensions({ width, height }, maxDimension) {
+  const scale = Math.min(1, maxDimension / Math.max(width, height));
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
 }
 
 function wait(milliseconds) {

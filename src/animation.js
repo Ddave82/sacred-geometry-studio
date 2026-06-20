@@ -23,7 +23,14 @@ export const ANIMATION_PRESETS = [
 
 const MIME_CANDIDATES = {
   webm: ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'],
-  mp4: ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=h264', 'video/mp4'],
+  mp4: [
+    'video/mp4;codecs=avc1.42E01E',
+    'video/mp4;codecs="avc1.42E01E"',
+    'video/mp4; codecs="avc1.42E01E"',
+    'video/mp4;codecs=avc1',
+    'video/mp4;codecs=h264',
+    'video/mp4',
+  ],
 };
 
 export function getAnimatedState(state, timeSeconds = 0) {
@@ -71,19 +78,19 @@ export function getAnimatedState(state, timeSeconds = 0) {
   return animated;
 }
 
-export function getSupportedVideoType(preferredFormat = 'webm') {
+export function getSupportedVideoType(preferredFormat = 'webm', { allowFallback = false } = {}) {
   const format = preferredFormat === 'mp4' ? 'mp4' : 'webm';
   const preferred = MIME_CANDIDATES[format] ?? MIME_CANDIDATES.webm;
   const fallback = format === 'mp4' ? MIME_CANDIDATES.webm : MIME_CANDIDATES.mp4;
-  const candidates = [...preferred, ...fallback];
+  const candidates = allowFallback ? [...preferred, ...fallback] : preferred;
 
   if (!globalThis.MediaRecorder?.isTypeSupported) {
-    return { mimeType: '', extension: 'webm', requestedExtension: format };
+    return { mimeType: '', extension: format, requestedExtension: format, supported: false };
   }
 
   const mimeType = candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate)) || '';
   const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-  return { mimeType, extension, requestedExtension: format };
+  return { mimeType, extension, requestedExtension: format, supported: Boolean(mimeType) };
 }
 
 export function supportsVideoExport() {

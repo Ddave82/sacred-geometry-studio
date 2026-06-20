@@ -11,7 +11,7 @@ import {
   sanitizeState,
 } from './state.js';
 import { applyMoodPreset, createSeed, generateVariation, MOOD_PRESETS } from './presets.js';
-import { exportPng, exportSvg, exportVideo } from './export.js';
+import { exportGif, exportPng, exportSvg, exportVideo } from './export.js';
 import { getPreviewAspect, renderArtworkSvg } from './renderer.js';
 import { deletePreset, loadSavedPresets, savePreset } from './storage.js';
 
@@ -35,7 +35,9 @@ const elements = {
   symmetryField: document.querySelector('#symmetryInput')?.closest('.field'),
   overlaySymmetryInput: document.querySelector('#overlaySymmetryInput'),
   overlaySymmetryField: document.querySelector('#overlaySymmetryInput')?.closest('.field'),
-  videoExportButton: document.querySelector('#exportVideoButton'),
+  exportGifButton: document.querySelector('#exportGifButton'),
+  exportWebmButton: document.querySelector('#exportWebmButton'),
+  exportMp4Button: document.querySelector('#exportMp4Button'),
   videoExportStatus: document.querySelector('#videoExportStatus'),
 };
 
@@ -172,7 +174,9 @@ function bindActionEvents() {
 
   document.querySelector('#exportSvgButton').addEventListener('click', () => exportSvg(state));
   document.querySelector('#exportPngButton').addEventListener('click', () => exportPng(state));
-  elements.videoExportButton.addEventListener('click', handleVideoExport);
+  elements.exportGifButton.addEventListener('click', () => handleMotionExport('gif'));
+  elements.exportWebmButton.addEventListener('click', () => handleMotionExport('webm'));
+  elements.exportMp4Button.addEventListener('click', () => handleMotionExport('mp4'));
 
   document.querySelector('#savePresetButton').addEventListener('click', () => {
     const name = elements.presetNameInput.value.trim();
@@ -325,30 +329,50 @@ function stopAnimationLoop() {
   previewAnimationTime = 0;
 }
 
-async function handleVideoExport() {
-  const previousLabel = elements.videoExportButton.textContent;
-  elements.videoExportButton.disabled = true;
-  elements.videoExportButton.classList.add('is-busy');
-  elements.videoExportStatus.textContent = 'Preparing video';
+async function handleMotionExport(format) {
+  const activeButton = {
+    gif: elements.exportGifButton,
+    webm: elements.exportWebmButton,
+    mp4: elements.exportMp4Button,
+  }[format];
+  const previousLabel = activeButton.textContent;
+  setMotionExportBusy(true, activeButton);
+  elements.videoExportStatus.textContent = `Preparing ${format.toUpperCase()}`;
 
   try {
-    const result = await exportVideo(state, {
-      onProgress: ({ progress, extension, requestedExtension }) => {
-        const percent = Math.round(progress * 100);
-        const fallback = requestedExtension !== extension ? 'WebM fallback' : extension.toUpperCase();
-        elements.videoExportButton.textContent = `${percent}%`;
-        elements.videoExportStatus.textContent = `Rendering ${fallback}`;
-      },
-    });
+    const result =
+      format === 'gif'
+        ? await exportGif(state, { onProgress: handleMotionExportProgress(activeButton, format) })
+        : await exportVideo(state, {
+            format,
+            allowFallback: false,
+            onProgress: handleMotionExportProgress(activeButton, format),
+          });
+
     elements.videoExportStatus.textContent =
-      result.requestedExtension === result.extension
-        ? `Saved ${result.extension.toUpperCase()}`
-        : 'Saved WebM, MP4 unsupported here';
+      result.extension === 'gif'
+        ? `Saved GIF at ${result.width}px`
+        : `Saved ${result.extension.toUpperCase()}`;
   } catch (error) {
-    elements.videoExportStatus.textContent = error?.message || 'Video export failed';
+    elements.videoExportStatus.textContent = error?.message || `${format.toUpperCase()} export failed`;
   } finally {
-    elements.videoExportButton.disabled = false;
-    elements.videoExportButton.classList.remove('is-busy');
-    elements.videoExportButton.textContent = previousLabel;
+    activeButton.textContent = previousLabel;
+    setMotionExportBusy(false, activeButton);
   }
+}
+
+function handleMotionExportProgress(button, format) {
+  return ({ progress, fps, width }) => {
+    const percent = Math.round(progress * 100);
+    button.textContent = `${percent}%`;
+    elements.videoExportStatus.textContent =
+      format === 'gif' ? `Rendering GIF ${width}px / ${fps}fps` : `Rendering ${format.toUpperCase()}`;
+  };
+}
+
+function setMotionExportBusy(isBusy, activeButton) {
+  [elements.exportGifButton, elements.exportWebmButton, elements.exportMp4Button].forEach((button) => {
+    button.disabled = isBusy;
+    button.classList.toggle('is-busy', isBusy && button === activeButton);
+  });
 }

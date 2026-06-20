@@ -139,7 +139,6 @@ export const DEFAULT_STATE = {
   animationDuration: 6,
   animationFps: 30,
   animationStrength: 60,
-  animationFormat: 'webm',
 };
 
 export function createDefaultState() {
@@ -186,7 +185,6 @@ export function sanitizeState(input) {
   if (!ANIMATION_PRESETS.some((preset) => preset.id === state.animationPreset)) {
     state.animationPreset = DEFAULT_STATE.animationPreset;
   }
-  state.animationFormat = state.animationFormat === 'mp4' ? 'mp4' : 'webm';
 
   if (!PATTERNS.some((pattern) => pattern.id === state.pattern)) state.pattern = DEFAULT_STATE.pattern;
   if (!PATTERNS.some((pattern) => pattern.id === state.overlayPattern)) state.overlayPattern = DEFAULT_STATE.overlayPattern;

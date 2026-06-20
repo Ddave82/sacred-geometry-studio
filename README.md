@@ -24,7 +24,7 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 - Local preset save, load, and delete via `localStorage`
 - SVG export
 - PNG export at `1024`, `2048`, and `4096` px
-- Video export via browser `MediaRecorder` with WebM support and MP4 where the browser allows it
+- Animation export as GIF, WebM, and MP4 where the browser allows native MP4 recording
 - Aspect ratios for square, portrait, landscape, and A4-style output
 - Fully client-side: no backend, login, database, or API keys
 
@@ -78,7 +78,8 @@ Built-in mood presets are tuned to create export-worthy starting points:
 - Vanilla JavaScript modules
 - SVG rendering
 - Canvas for PNG and video rendering
-- Browser `MediaRecorder` for video export
+- Browser `MediaRecorder` for WebM and native MP4 export
+- Lightweight built-in GIF encoder
 - CSS-only dark interface
 - `localStorage` for saved presets
 
@@ -120,7 +121,8 @@ src/
   geometry/
     patterns.js      Procedural pattern generation
   animation.js       Motion presets and video MIME support
-  export.js          SVG, PNG, and video export
+  export.js          SVG, PNG, GIF, WebM, and MP4 export
+  gif.js             Browser-side animated GIF encoder
   main.js            UI bindings and live updates
   presets.js         Mood presets and seeded randomizer
   renderer.js        SVG document rendering
@@ -131,4 +133,4 @@ src/
 
 ## Status
 
-The current build is a browser-only creative tool for still artwork and lightweight motion export. WebM is the most reliable video target; MP4 is used when the active browser exposes MP4 recording through `MediaRecorder`. MOV export is not included because browsers do not provide a practical native MOV encoder, and adding one would require a much heavier ffmpeg/WASM pipeline.
+The current build is a browser-only creative tool for still artwork and lightweight motion export. GIF and WebM are the most reliable browser targets. MP4 is used when the active browser exposes MP4 recording through `MediaRecorder`; browsers that do not support native MP4 recording will show that clearly instead of silently saving WebM. MOV export is not included because browsers do not provide a practical native MOV encoder, and adding one would require a much heavier ffmpeg/WASM pipeline.

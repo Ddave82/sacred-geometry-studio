@@ -260,16 +260,10 @@
                 <input id="animationStrengthInput" data-bind="animationStrength" type="range" min="0" max="100" step="1" />
               </label>
 
-              <label class="field" for="animationFormatSelect">
-                <span>Video Format</span>
-                <select id="animationFormatSelect" data-bind="animationFormat">
-                  <option value="webm">WebM</option>
-                  <option value="mp4">MP4 if supported</option>
-                </select>
-              </label>
-
               <div class="video-export-row field-full">
-                <button id="exportVideoButton" class="button button-primary" type="button">Export Video</button>
+                <button id="exportGifButton" class="button button-primary" type="button">GIF</button>
+                <button id="exportWebmButton" class="button button-ghost" type="button">WebM</button>
+                <button id="exportMp4Button" class="button button-ghost" type="button">MP4</button>
                 <span id="videoExportStatus" class="export-status" aria-live="polite"></span>
               </div>
             </div>
