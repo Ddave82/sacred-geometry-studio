@@ -1,8 +1,10 @@
+import { getAnimatedState } from './animation.js';
 import { getAspectRatio, getBackgroundPreset } from './state.js';
 import { renderCenterSymbol, renderPattern } from './geometry/patterns.js';
 
 export function renderArtworkSvg(state, options = {}) {
   const aspect = getAspectRatio(state.aspectRatio);
+  const renderState = options.animationTime == null ? state : getAnimatedState(state, options.animationTime);
   const exportWidth = options.width ?? aspect.width;
   const exportHeight = options.height ?? aspect.height;
   const idPrefix = options.idPrefix ?? `sg-${hashString(state.seed)}`;
@@ -19,51 +21,51 @@ export function renderArtworkSvg(state, options = {}) {
   const vignetteId = `${idPrefix}-vignette`;
   const marbleId = `${idPrefix}-marble`;
   const defs = [
-    renderGlowDef(glowId, state.glowStrength, state.strokeColor),
-    renderGrainDef(grainId, state.seed),
-    renderBackgroundDefs(backgroundId, vignetteId, marbleId, state),
+    renderGlowDef(glowId, renderState.glowStrength, renderState.strokeColor),
+    renderGrainDef(grainId, renderState.seed),
+    renderBackgroundDefs(backgroundId, vignetteId, marbleId, renderState),
   ].join('');
 
   const baseOptions = {
-    complexity: state.complexity,
-    scale: state.scale,
-    rotation: state.rotation,
-    strokeWidth: state.strokeWidth,
-    strokeColor: state.strokeColor,
-    secondaryColor: state.secondaryColor,
-    fillEnabled: state.fillEnabled,
-    fillOpacity: state.fillOpacity,
-    strokeOpacity: state.strokeOpacity,
-    glowStrength: state.glowStrength,
+    complexity: renderState.complexity,
+    scale: renderState.scale,
+    rotation: renderState.rotation,
+    strokeWidth: renderState.strokeWidth,
+    strokeColor: renderState.strokeColor,
+    secondaryColor: renderState.secondaryColor,
+    fillEnabled: renderState.fillEnabled,
+    fillOpacity: renderState.fillOpacity,
+    strokeOpacity: renderState.strokeOpacity,
+    glowStrength: renderState.glowStrength,
     glowId,
-    centerEmphasis: state.centerEmphasis,
-    symmetry: state.symmetry,
+    centerEmphasis: renderState.centerEmphasis,
+    symmetry: renderState.symmetry,
     opacity: 1,
   };
-  const background = renderBackground(context, backgroundId, vignetteId, marbleId, grainId, state);
-  const mainLayer = renderPattern(state.pattern, context, baseOptions);
-  const overlayLayer = state.overlayEnabled
-    ? renderPattern(state.overlayPattern, context, {
+  const background = renderBackground(context, backgroundId, vignetteId, marbleId, grainId, renderState);
+  const mainLayer = renderPattern(renderState.pattern, context, baseOptions);
+  const overlayLayer = renderState.overlayEnabled
+    ? renderPattern(renderState.overlayPattern, context, {
         ...baseOptions,
-        complexity: state.overlayComplexity,
-        scale: state.overlayScale,
-        symmetry: state.overlaySymmetry,
-        rotation: state.overlayRotation,
-        strokeWidth: Math.max(0.8, state.strokeWidth * 0.72),
-        strokeColor: state.secondaryColor,
-        secondaryColor: state.strokeColor,
+        complexity: renderState.overlayComplexity,
+        scale: renderState.overlayScale,
+        symmetry: renderState.overlaySymmetry,
+        rotation: renderState.overlayRotation,
+        strokeWidth: Math.max(0.8, renderState.strokeWidth * 0.72),
+        strokeColor: renderState.secondaryColor,
+        secondaryColor: renderState.strokeColor,
         fillEnabled: false,
         fillOpacity: 0,
-        strokeOpacity: Math.min(1, state.strokeOpacity * 0.82),
-        opacity: state.overlayOpacity,
+        strokeOpacity: Math.min(1, renderState.strokeOpacity * 0.82),
+        opacity: renderState.overlayOpacity,
         centerEmphasis: false,
       })
     : '';
-  const centerLayer = state.centerSymbolEnabled
+  const centerLayer = renderState.centerSymbolEnabled
     ? renderCenterSymbol(context, {
         ...baseOptions,
-        strokeWidth: Math.max(0.9, state.strokeWidth * 0.88),
-        opacity: Math.min(1, state.strokeOpacity + 0.08),
+        strokeWidth: Math.max(0.9, renderState.strokeWidth * 0.88),
+        opacity: Math.min(1, renderState.strokeOpacity + 0.08),
       })
     : '';
 

@@ -1,3 +1,5 @@
+import { ANIMATION_PRESETS } from './animation.js';
+
 export const PATTERNS = [
   {
     id: 'flower-of-life',
@@ -132,6 +134,12 @@ export const DEFAULT_STATE = {
   grain: true,
   aspectRatio: 'square',
   exportSize: 2048,
+  animationPreviewEnabled: false,
+  animationPreset: 'cosmic-spin',
+  animationDuration: 6,
+  animationFps: 30,
+  animationStrength: 60,
+  animationFormat: 'webm',
 };
 
 export function createDefaultState() {
@@ -171,6 +179,14 @@ export function sanitizeState(input) {
   state.overlaySymmetry = clampNumber(state.overlaySymmetry, 5, 24);
   state.overlayRotation = wrapDegrees(state.overlayRotation);
   state.exportSize = [1024, 2048, 4096].includes(Number(state.exportSize)) ? Number(state.exportSize) : 2048;
+  state.animationDuration = clampNumber(state.animationDuration, 2, 20);
+  state.animationFps = clampNumber(state.animationFps, 12, 60);
+  state.animationStrength = clampNumber(state.animationStrength, 0, 100);
+  state.animationPreviewEnabled = Boolean(state.animationPreviewEnabled);
+  if (!ANIMATION_PRESETS.some((preset) => preset.id === state.animationPreset)) {
+    state.animationPreset = DEFAULT_STATE.animationPreset;
+  }
+  state.animationFormat = state.animationFormat === 'mp4' ? 'mp4' : 'webm';
 
   if (!PATTERNS.some((pattern) => pattern.id === state.pattern)) state.pattern = DEFAULT_STATE.pattern;
   if (!PATTERNS.some((pattern) => pattern.id === state.overlayPattern)) state.overlayPattern = DEFAULT_STATE.overlayPattern;

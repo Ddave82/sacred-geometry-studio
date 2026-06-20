@@ -231,6 +231,52 @@
 
           <section class="panel-section">
             <div class="section-heading">
+              <span class="eyebrow">Motion</span>
+              <h2>Animation</h2>
+            </div>
+            <div class="control-grid">
+              <label class="toggle-field field-full" for="animationPreviewEnabledInput">
+                <input id="animationPreviewEnabledInput" data-bind="animationPreviewEnabled" type="checkbox" />
+                <span>Animated Preview</span>
+              </label>
+
+              <label class="field field-full" for="animationPresetSelect">
+                <span>Motion Preset</span>
+                <select id="animationPresetSelect" data-bind="animationPreset"></select>
+              </label>
+
+              <label class="field" for="animationDurationInput">
+                <span>Duration <output id="animationDurationValue"></output></span>
+                <input id="animationDurationInput" data-bind="animationDuration" type="range" min="2" max="20" step="1" />
+              </label>
+
+              <label class="field" for="animationFpsInput">
+                <span>FPS <output id="animationFpsValue"></output></span>
+                <input id="animationFpsInput" data-bind="animationFps" type="range" min="12" max="60" step="6" />
+              </label>
+
+              <label class="field" for="animationStrengthInput">
+                <span>Motion <output id="animationStrengthValue"></output></span>
+                <input id="animationStrengthInput" data-bind="animationStrength" type="range" min="0" max="100" step="1" />
+              </label>
+
+              <label class="field" for="animationFormatSelect">
+                <span>Video Format</span>
+                <select id="animationFormatSelect" data-bind="animationFormat">
+                  <option value="webm">WebM</option>
+                  <option value="mp4">MP4 if supported</option>
+                </select>
+              </label>
+
+              <div class="video-export-row field-full">
+                <button id="exportVideoButton" class="button button-primary" type="button">Export Video</button>
+                <span id="videoExportStatus" class="export-status" aria-live="polite"></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
               <span class="eyebrow">Export</span>
               <h2>Output</h2>
             </div>

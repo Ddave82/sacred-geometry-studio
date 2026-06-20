@@ -1,4 +1,5 @@
 import './styles.css';
+import { ANIMATION_PRESETS } from './animation.js';
 import {
   ASPECT_RATIOS,
   BACKGROUND_PRESETS,
@@ -10,11 +11,14 @@ import {
   sanitizeState,
 } from './state.js';
 import { applyMoodPreset, createSeed, generateVariation, MOOD_PRESETS } from './presets.js';
-import { exportPng, exportSvg } from './export.js';
+import { exportPng, exportSvg, exportVideo } from './export.js';
 import { getPreviewAspect, renderArtworkSvg } from './renderer.js';
 import { deletePreset, loadSavedPresets, savePreset } from './storage.js';
 
 let state = createDefaultState();
+let animationFrameId = null;
+let previewAnimationTime = 0;
+let previewStartedAt = 0;
 
 const elements = {
   mount: document.querySelector('#artworkMount'),
@@ -31,6 +35,8 @@ const elements = {
   symmetryField: document.querySelector('#symmetryInput')?.closest('.field'),
   overlaySymmetryInput: document.querySelector('#overlaySymmetryInput'),
   overlaySymmetryField: document.querySelector('#overlaySymmetryInput')?.closest('.field'),
+  videoExportButton: document.querySelector('#exportVideoButton'),
+  videoExportStatus: document.querySelector('#videoExportStatus'),
 };
 
 const bindings = [...document.querySelectorAll('[data-bind]')];
@@ -49,6 +55,9 @@ const numericKeys = new Set([
   'overlaySymmetry',
   'overlayRotation',
   'exportSize',
+  'animationDuration',
+  'animationFps',
+  'animationStrength',
 ]);
 
 const checkboxKeys = new Set([
@@ -58,6 +67,7 @@ const checkboxKeys = new Set([
   'centerSymbolEnabled',
   'vignette',
   'grain',
+  'animationPreviewEnabled',
 ]);
 
 const outputs = {
@@ -74,6 +84,9 @@ const outputs = {
   overlayComplexity: document.querySelector('#overlayComplexityValue'),
   overlaySymmetry: document.querySelector('#overlaySymmetryValue'),
   overlayRotation: document.querySelector('#overlayRotationValue'),
+  animationDuration: document.querySelector('#animationDurationValue'),
+  animationFps: document.querySelector('#animationFpsValue'),
+  animationStrength: document.querySelector('#animationStrengthValue'),
 };
 
 init();
@@ -83,6 +96,7 @@ function init() {
   populateSelect(document.querySelector('#overlayPatternSelect'), PATTERNS);
   populateSelect(document.querySelector('#backgroundPresetSelect'), BACKGROUND_PRESETS);
   populateSelect(document.querySelector('#aspectRatioSelect'), ASPECT_RATIOS);
+  populateSelect(document.querySelector('#animationPresetSelect'), ANIMATION_PRESETS);
   renderMoodPresetButtons();
   bindControlEvents();
   bindActionEvents();
@@ -158,6 +172,7 @@ function bindActionEvents() {
 
   document.querySelector('#exportSvgButton').addEventListener('click', () => exportSvg(state));
   document.querySelector('#exportPngButton').addEventListener('click', () => exportPng(state));
+  elements.videoExportButton.addEventListener('click', handleVideoExport);
 
   document.querySelector('#savePresetButton').addEventListener('click', () => {
     const name = elements.presetNameInput.value.trim();
@@ -215,6 +230,9 @@ function syncOutputs() {
   outputs.overlayComplexity.textContent = state.overlayComplexity;
   outputs.overlaySymmetry.textContent = state.overlaySymmetry;
   outputs.overlayRotation.textContent = `${Math.round(state.overlayRotation)}deg`;
+  outputs.animationDuration.textContent = `${state.animationDuration}s`;
+  outputs.animationFps.textContent = state.animationFps;
+  outputs.animationStrength.textContent = `${state.animationStrength}%`;
 }
 
 function syncControlAvailability() {
@@ -258,11 +276,79 @@ function render() {
   const aspect = getAspectRatio(state.aspectRatio);
   const activePreset = MOOD_PRESETS.find((preset) => preset.id === state.moodPreset);
 
-  elements.mount.innerHTML = renderArtworkSvg(state);
+  renderPreviewFrame(state.animationPreviewEnabled ? previewAnimationTime : null);
   elements.frame.style.aspectRatio = getPreviewAspect(state);
   elements.previewTitle.textContent = activePreset?.name ?? 'Custom Design';
   elements.previewAspect.textContent = aspect.label;
   elements.previewPattern.textContent = pattern.label;
   elements.patternDescription.textContent = pattern.description;
   syncControlAvailability();
+  syncAnimationLoop();
+}
+
+function renderPreviewFrame(animationTime = null) {
+  const options = animationTime == null ? {} : { animationTime };
+  elements.mount.innerHTML = renderArtworkSvg(state, options);
+}
+
+function syncAnimationLoop() {
+  if (state.animationPreviewEnabled) {
+    startAnimationLoop();
+  } else {
+    stopAnimationLoop();
+  }
+}
+
+function startAnimationLoop() {
+  if (animationFrameId !== null) return;
+  previewStartedAt = performance.now() - previewAnimationTime * 1000;
+
+  const tick = (now) => {
+    if (!state.animationPreviewEnabled) {
+      animationFrameId = null;
+      return;
+    }
+
+    previewAnimationTime = (now - previewStartedAt) / 1000;
+    renderPreviewFrame(previewAnimationTime);
+    animationFrameId = requestAnimationFrame(tick);
+  };
+
+  animationFrameId = requestAnimationFrame(tick);
+}
+
+function stopAnimationLoop() {
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  previewAnimationTime = 0;
+}
+
+async function handleVideoExport() {
+  const previousLabel = elements.videoExportButton.textContent;
+  elements.videoExportButton.disabled = true;
+  elements.videoExportButton.classList.add('is-busy');
+  elements.videoExportStatus.textContent = 'Preparing video';
+
+  try {
+    const result = await exportVideo(state, {
+      onProgress: ({ progress, extension, requestedExtension }) => {
+        const percent = Math.round(progress * 100);
+        const fallback = requestedExtension !== extension ? 'WebM fallback' : extension.toUpperCase();
+        elements.videoExportButton.textContent = `${percent}%`;
+        elements.videoExportStatus.textContent = `Rendering ${fallback}`;
+      },
+    });
+    elements.videoExportStatus.textContent =
+      result.requestedExtension === result.extension
+        ? `Saved ${result.extension.toUpperCase()}`
+        : 'Saved WebM, MP4 unsupported here';
+  } catch (error) {
+    elements.videoExportStatus.textContent = error?.message || 'Video export failed';
+  } finally {
+    elements.videoExportButton.disabled = false;
+    elements.videoExportButton.classList.remove('is-busy');
+    elements.videoExportButton.textContent = previousLabel;
+  }
 }

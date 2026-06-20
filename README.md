@@ -1,6 +1,6 @@
 # Sacred Geometry Studio
 
-Sacred Geometry Studio is a polished dark-mode creative tool for generating procedural sacred geometry artwork directly in the browser. It is built as a focused creative studio: live SVG preview, curated visual presets, deterministic randomization, layered geometry, and export-ready artwork without accounts, backend services, or external AI APIs.
+Sacred Geometry Studio is a polished dark-mode creative tool for generating procedural sacred geometry artwork directly in the browser. It is built as a focused creative studio: live SVG preview, curated visual presets, deterministic randomization, layered geometry, animation controls, and export-ready artwork without accounts, backend services, or external AI APIs.
 
 **Live demo:** [ddave82.github.io/sacred-geometry-studio](https://ddave82.github.io/sacred-geometry-studio/)
 
@@ -8,7 +8,7 @@ Sacred Geometry Studio is a polished dark-mode creative tool for generating proc
 
 ## What It Does
 
-Sacred Geometry Studio turns procedural geometry into exportable artwork. Choose a pattern, tune the structure, layer a secondary overlay, shape the background, and export the result as SVG or high-resolution PNG.
+Sacred Geometry Studio turns procedural geometry into exportable artwork. Choose a pattern, tune the structure, layer a secondary overlay, shape the background, add motion, and export the result as SVG, high-resolution PNG, or browser-rendered video.
 
 The interface is intentionally dark, calm, and studio-like so the artwork stays visually dominant. Presets such as Ancient Gold, Cosmic Violet, Deep Space, Black Paper, and Copper Engraving are designed to look strong immediately while still being fully editable.
 
@@ -20,9 +20,11 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 - Main geometry layer plus secondary overlay and center symbol layer
 - Mood presets with curated palettes and background styles
 - Deterministic random designs from a reusable seed
+- Compact motion system with animated preview
 - Local preset save, load, and delete via `localStorage`
 - SVG export
 - PNG export at `1024`, `2048`, and `4096` px
+- Video export via browser `MediaRecorder` with WebM support and MP4 where the browser allows it
 - Aspect ratios for square, portrait, landscape, and A4-style output
 - Fully client-side: no backend, login, database, or API keys
 
@@ -51,6 +53,7 @@ The editor exposes practical controls for producing finished artwork rather than
 - Pattern-specific symmetry controls
 - Independent overlay pattern, size, complexity, symmetry, rotation, and opacity
 - Background presets, colors, vignette, and subtle grain
+- Animation preset, duration, FPS, motion strength, preview toggle, and video format
 
 Controls that do not apply to a selected pattern are disabled instead of pretending to change the geometry. For example, Metatron's Cube has fixed six-fold symmetry, while Radial Mandala and Star Grid expose free symmetry control.
 
@@ -74,7 +77,8 @@ Built-in mood presets are tuned to create export-worthy starting points:
 - [Vite](https://vite.dev/)
 - Vanilla JavaScript modules
 - SVG rendering
-- Canvas only for PNG export
+- Canvas for PNG and video rendering
+- Browser `MediaRecorder` for video export
 - CSS-only dark interface
 - `localStorage` for saved presets
 
@@ -115,7 +119,8 @@ The included workflow builds the Vite app and deploys `dist/` to GitHub Pages wh
 src/
   geometry/
     patterns.js      Procedural pattern generation
-  export.js          SVG and PNG export
+  animation.js       Motion presets and video MIME support
+  export.js          SVG, PNG, and video export
   main.js            UI bindings and live updates
   presets.js         Mood presets and seeded randomizer
   renderer.js        SVG document rendering
@@ -126,4 +131,4 @@ src/
 
 ## Status
 
-Version `0.1.0` is a browser-only creative tool focused on still artwork generation. Animation export, cloud save, accounts, marketplace features, and AI generation are intentionally out of scope for this version.
+The current build is a browser-only creative tool for still artwork and lightweight motion export. WebM is the most reliable video target; MP4 is used when the active browser exposes MP4 recording through `MediaRecorder`. MOV export is not included because browsers do not provide a practical native MOV encoder, and adding one would require a much heavier ffmpeg/WASM pipeline.
