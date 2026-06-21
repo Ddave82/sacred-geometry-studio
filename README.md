@@ -1,6 +1,6 @@
 # Sacred Geometry Studio
 
-Sacred Geometry Studio is a polished dark-mode creative tool for generating procedural sacred geometry artwork directly in the browser. It is built as a focused creative studio: live SVG preview, curated visual presets, deterministic randomization, layered geometry, animation controls, and export-ready artwork without accounts, backend services, or external AI APIs.
+Sacred Geometry Studio is a polished dark-mode creative tool for generating procedural sacred geometry artwork directly in the browser. It is built as a focused creative studio: live SVG preview, curated visual presets, deterministic randomization, layered geometry, collapsible control panels, animation controls, and export-ready artwork without accounts, backend services, or external AI APIs.
 
 **Live demo:** [ddave82.github.io/sacred-geometry-studio](https://ddave82.github.io/sacred-geometry-studio/)
 
@@ -17,7 +17,9 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 - Procedural SVG renderer with no static pattern images
 - Dark premium creative-studio interface
 - Live preview that updates instantly
-- Main geometry layer plus secondary overlay and center symbol layer
+- Main geometry layer with integrated stroke, fill, glow, and light controls
+- Secondary overlay system with independent pattern, scale, complexity, symmetry, rotation, and opacity
+- Optional center symbol layer with motion support
 - Mood presets with curated palettes and background styles
 - Deterministic random designs from a reusable seed
 - Compact motion system with animated preview
@@ -25,6 +27,7 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 - Loop-safe motion math for seamless animation exports
 - Adaptive GIF palette export with grain suppression for cleaner color output
 - Local preset save, load, and delete via `localStorage`
+- Collapsible studio panels for Geometry Layer, Overlay System, Artwork Background, and Animation
 - SVG export
 - PNG export at `1024`, `2048`, and `4096` px
 - Animation export as GIF, WebM, and MP4 where the browser allows native MP4 recording
@@ -45,18 +48,14 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 
 The editor exposes practical controls for producing finished artwork rather than technical demos:
 
-- Pattern type
-- Rings / complexity
-- Radius / scale
-- Rotation
-- Stroke width, color, opacity, and glow
-- Secondary color
-- Fill and fill opacity
-- Center emphasis and animated center symbol layer
-- Pattern-specific symmetry controls
-- Independent overlay pattern, size, complexity, symmetry, rotation, and opacity
-- Background presets, colors, vignette, and subtle grain
-- Animation preset, duration, video FPS, GIF FPS, motion depth, GIF pixel size, preview toggle, and export format buttons
+The right-hand studio panel is organized into focused, collapsible sections:
+
+- **Geometry Layer**: pattern type, rings / complexity, radius / scale, rotation, pattern symmetry, stroke color, secondary color, stroke width, stroke opacity, fill opacity, glow, fill toggle, and center emphasis
+- **Overlay System**: secondary overlay toggle, overlay pattern, opacity, size, complexity, symmetry, rotation, and center symbol layer
+- **Artwork Background**: background preset, two editable background colors, vignette, and subtle grain
+- **Animation**: animated preview, motion preset, duration, video FPS, GIF FPS, motion depth, GIF pixel size, and GIF / WebM / MP4 export buttons
+- **Output**: aspect ratio and high-resolution PNG size
+- **Saved Designs**: local preset save, load, and delete
 
 Controls that do not apply to a selected pattern are disabled instead of pretending to change the geometry. For example, Metatron's Cube has fixed six-fold symmetry, while Radial Mandala and Star Grid expose free symmetry control.
 
@@ -83,8 +82,8 @@ Built-in mood presets are tuned to create export-worthy starting points:
 - Canvas for PNG and video rendering
 - Browser `MediaRecorder` for WebM and native MP4 export
 - Lightweight built-in GIF encoder
-- CSS-only dark interface
-- `localStorage` for saved presets
+- CSS-only dark interface with custom-styled controls and collapsible panels
+- `localStorage` for saved presets and panel open / closed state
 
 ## Run Locally
 
