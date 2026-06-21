@@ -22,6 +22,7 @@ let previewStartedAt = 0;
 let lastPreviewRenderAt = 0;
 
 const PREVIEW_MAX_FPS = 24;
+const COLLAPSE_STORAGE_KEY = 'sacred-geometry-collapsible-sections';
 
 const elements = {
   mount: document.querySelector('#artworkMount'),
@@ -107,6 +108,7 @@ function init() {
   populateSelect(document.querySelector('#aspectRatioSelect'), ASPECT_RATIOS);
   populateSelect(document.querySelector('#animationPresetSelect'), ANIMATION_PRESETS);
   renderMoodPresetButtons();
+  bindCollapsibleSections();
   bindControlEvents();
   bindActionEvents();
   syncSavedPresetSelect();
@@ -130,6 +132,59 @@ function renderMoodPresetButtons() {
     syncControls();
     render();
   });
+}
+
+function bindCollapsibleSections() {
+  const savedSections = loadCollapsedSections();
+
+  document.querySelectorAll('[data-collapsible]').forEach((section) => {
+    const sectionId = section.dataset.sectionId;
+    const toggle = section.querySelector('[data-collapse-toggle]');
+    const content = section.querySelector('[data-collapse-content]');
+    if (!sectionId || !toggle || !content) return;
+
+    const hasSavedState = Object.prototype.hasOwnProperty.call(savedSections, sectionId);
+    const isCollapsed = hasSavedState ? savedSections[sectionId] : section.dataset.defaultCollapsed === 'true';
+    setSectionCollapsed(section, isCollapsed);
+
+    toggle.addEventListener('click', () => {
+      const nextCollapsed = toggle.getAttribute('aria-expanded') === 'true';
+      setSectionCollapsed(section, nextCollapsed);
+      saveCollapsedSection(sectionId, nextCollapsed);
+    });
+  });
+}
+
+function setSectionCollapsed(section, isCollapsed) {
+  const toggle = section.querySelector('[data-collapse-toggle]');
+  const content = section.querySelector('[data-collapse-content]');
+  if (!toggle || !content) return;
+
+  section.classList.toggle('is-collapsed', isCollapsed);
+  toggle.setAttribute('aria-expanded', String(!isCollapsed));
+  content.hidden = isCollapsed;
+}
+
+function loadCollapsedSections() {
+  try {
+    const rawState = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+    if (!rawState) return {};
+    const parsedState = JSON.parse(rawState);
+    return parsedState && typeof parsedState === 'object' ? parsedState : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCollapsedSection(sectionId, isCollapsed) {
+  const savedSections = loadCollapsedSections();
+  savedSections[sectionId] = isCollapsed;
+
+  try {
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(savedSections));
+  } catch {
+    // Collapsing is a UI preference; failing to persist it should never block the tool.
+  }
 }
 
 function bindControlEvents() {

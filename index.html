@@ -67,12 +67,23 @@
             <div id="moodPresetGrid" class="preset-grid"></div>
           </section>
 
-          <section class="panel-section">
-            <div class="section-heading">
+          <section class="panel-section" data-collapsible data-section-id="geometry-layer">
+            <div class="section-heading section-heading-collapsible">
               <span class="eyebrow">Pattern</span>
-              <h2>Geometry Layer</h2>
+              <h2>
+                <button
+                  class="section-toggle"
+                  type="button"
+                  data-collapse-toggle
+                  aria-expanded="true"
+                  aria-controls="geometryLayerControls"
+                >
+                  <span>Geometry Layer</span>
+                  <span class="collapse-icon" aria-hidden="true"></span>
+                </button>
+              </h2>
             </div>
-            <div class="control-grid">
+            <div id="geometryLayerControls" class="control-grid" data-collapse-content>
               <label class="field field-full" for="patternSelect">
                 <span>Pattern Type</span>
                 <select id="patternSelect" data-bind="pattern"></select>
@@ -148,12 +159,23 @@
             </div>
           </section>
 
-          <section class="panel-section">
-            <div class="section-heading">
+          <section class="panel-section" data-collapsible data-section-id="overlay-system" data-default-collapsed="true">
+            <div class="section-heading section-heading-collapsible">
               <span class="eyebrow">Layers</span>
-              <h2>Overlay System</h2>
+              <h2>
+                <button
+                  class="section-toggle"
+                  type="button"
+                  data-collapse-toggle
+                  aria-expanded="false"
+                  aria-controls="overlaySystemControls"
+                >
+                  <span>Overlay System</span>
+                  <span class="collapse-icon" aria-hidden="true"></span>
+                </button>
+              </h2>
             </div>
-            <div class="control-grid">
+            <div id="overlaySystemControls" class="control-grid" data-collapse-content>
               <label class="toggle-field field-full" for="overlayEnabledInput">
                 <input id="overlayEnabledInput" data-bind="overlayEnabled" type="checkbox" />
                 <span>Secondary Overlay</span>
@@ -196,12 +218,23 @@
             </div>
           </section>
 
-          <section class="panel-section">
-            <div class="section-heading">
+          <section class="panel-section" data-collapsible data-section-id="artwork-background" data-default-collapsed="true">
+            <div class="section-heading section-heading-collapsible">
               <span class="eyebrow">Ground</span>
-              <h2>Artwork Background</h2>
+              <h2>
+                <button
+                  class="section-toggle"
+                  type="button"
+                  data-collapse-toggle
+                  aria-expanded="false"
+                  aria-controls="artworkBackgroundControls"
+                >
+                  <span>Artwork Background</span>
+                  <span class="collapse-icon" aria-hidden="true"></span>
+                </button>
+              </h2>
             </div>
-            <div class="control-grid">
+            <div id="artworkBackgroundControls" class="control-grid" data-collapse-content>
               <label class="field field-full" for="backgroundPresetSelect">
                 <span>Background Preset</span>
                 <select id="backgroundPresetSelect" data-bind="backgroundPreset"></select>
@@ -229,12 +262,23 @@
             </div>
           </section>
 
-          <section class="panel-section">
-            <div class="section-heading">
+          <section class="panel-section" data-collapsible data-section-id="animation" data-default-collapsed="true">
+            <div class="section-heading section-heading-collapsible">
               <span class="eyebrow">Motion</span>
-              <h2>Animation</h2>
+              <h2>
+                <button
+                  class="section-toggle"
+                  type="button"
+                  data-collapse-toggle
+                  aria-expanded="false"
+                  aria-controls="animationControls"
+                >
+                  <span>Animation</span>
+                  <span class="collapse-icon" aria-hidden="true"></span>
+                </button>
+              </h2>
             </div>
-            <div class="control-grid">
+            <div id="animationControls" class="control-grid" data-collapse-content>
               <label class="toggle-field field-full" for="animationPreviewEnabledInput">
                 <input id="animationPreviewEnabledInput" data-bind="animationPreviewEnabled" type="checkbox" />
                 <span>Animated Preview</span>
