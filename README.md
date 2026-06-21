@@ -53,7 +53,7 @@ The editor exposes practical controls for producing finished artwork rather than
 - Pattern-specific symmetry controls
 - Independent overlay pattern, size, complexity, symmetry, rotation, and opacity
 - Background presets, colors, vignette, and subtle grain
-- Animation preset, duration, FPS, motion strength, GIF pixel size, preview toggle, and export format buttons
+- Animation preset, duration, video FPS, GIF FPS, motion strength, GIF pixel size, preview toggle, and export format buttons
 
 Controls that do not apply to a selected pattern are disabled instead of pretending to change the geometry. For example, Metatron's Cube has fixed six-fold symmetry, while Radial Mandala and Star Grid expose free symmetry control.
 

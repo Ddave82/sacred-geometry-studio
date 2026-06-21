@@ -251,7 +251,7 @@
               </label>
 
               <label class="field" for="animationFpsInput">
-                <span>FPS <output id="animationFpsValue"></output></span>
+                <span>Video FPS <output id="animationFpsValue"></output></span>
                 <input id="animationFpsInput" data-bind="animationFps" type="range" min="12" max="60" step="6" />
               </label>
 
@@ -263,6 +263,11 @@
               <label class="field" for="gifSizeInput">
                 <span>GIF Size <output id="gifSizeValue"></output></span>
                 <input id="gifSizeInput" data-bind="gifSize" type="number" min="320" max="2048" step="16" inputmode="numeric" />
+              </label>
+
+              <label class="field" for="gifFpsInput">
+                <span>GIF FPS <output id="gifFpsValue"></output></span>
+                <input id="gifFpsInput" data-bind="gifFps" type="number" min="2" max="24" step="1" inputmode="numeric" />
               </label>
 
               <div class="video-export-row field-full">

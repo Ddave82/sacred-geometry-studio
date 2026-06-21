@@ -3,7 +3,8 @@ import { createGifEncoder, imageDataToRgb332Indices } from './gif.js';
 import { getExportDimensions, renderArtworkSvg } from './renderer.js';
 
 const GIF_MAX_FRAMES = 180;
-const GIF_MAX_FPS = 18;
+const GIF_MIN_FPS = 2;
+const GIF_MAX_FPS = 24;
 const GIF_MIN_SIZE = 320;
 const GIF_MAX_SIZE = 2048;
 
@@ -112,8 +113,8 @@ export async function exportGif(state, { onProgress } = {}) {
   const gifSize = clamp(Number(state.gifSize) || 960, GIF_MIN_SIZE, GIF_MAX_SIZE);
   const { width, height } = getCappedDimensions(getExportDimensions(state), gifSize);
   const duration = clamp(Number(state.animationDuration) || 6, 2, 20);
-  const requestedFps = clamp(Number(state.animationFps) || 30, 6, 60);
-  const fps = Math.max(6, Math.min(GIF_MAX_FPS, requestedFps, Math.floor(GIF_MAX_FRAMES / duration)));
+  const requestedFps = clamp(Number(state.gifFps) || 12, GIF_MIN_FPS, GIF_MAX_FPS);
+  const fps = Math.max(GIF_MIN_FPS, Math.min(GIF_MAX_FPS, requestedFps, Math.floor(GIF_MAX_FRAMES / duration)));
   const totalFrames = Math.max(1, Math.round(duration * fps));
   const delayCs = Math.max(2, Math.round(100 / fps));
   const canvas = document.createElement('canvas');

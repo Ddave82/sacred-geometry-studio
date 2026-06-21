@@ -19,6 +19,9 @@ let state = createDefaultState();
 let animationFrameId = null;
 let previewAnimationTime = 0;
 let previewStartedAt = 0;
+let lastPreviewRenderAt = 0;
+
+const PREVIEW_MAX_FPS = 24;
 
 const elements = {
   mount: document.querySelector('#artworkMount'),
@@ -61,6 +64,7 @@ const numericKeys = new Set([
   'animationFps',
   'animationStrength',
   'gifSize',
+  'gifFps',
 ]);
 
 const checkboxKeys = new Set([
@@ -91,6 +95,7 @@ const outputs = {
   animationFps: document.querySelector('#animationFpsValue'),
   animationStrength: document.querySelector('#animationStrengthValue'),
   gifSize: document.querySelector('#gifSizeValue'),
+  gifFps: document.querySelector('#gifFpsValue'),
 };
 
 init();
@@ -240,6 +245,7 @@ function syncOutputs() {
   outputs.animationFps.textContent = state.animationFps;
   outputs.animationStrength.textContent = `${state.animationStrength}%`;
   outputs.gifSize.textContent = `${state.gifSize}px`;
+  outputs.gifFps.textContent = state.gifFps;
 }
 
 function syncControlAvailability() {
@@ -309,6 +315,7 @@ function syncAnimationLoop() {
 function startAnimationLoop() {
   if (animationFrameId !== null) return;
   previewStartedAt = performance.now() - previewAnimationTime * 1000;
+  lastPreviewRenderAt = 0;
 
   const tick = (now) => {
     if (!state.animationPreviewEnabled) {
@@ -316,8 +323,15 @@ function startAnimationLoop() {
       return;
     }
 
-    previewAnimationTime = (now - previewStartedAt) / 1000;
-    renderPreviewFrame(previewAnimationTime);
+    const previewFps = Math.min(PREVIEW_MAX_FPS, Math.max(8, Number(state.animationFps) || PREVIEW_MAX_FPS));
+    const frameInterval = 1000 / previewFps;
+
+    if (!document.hidden && now - lastPreviewRenderAt >= frameInterval) {
+      previewAnimationTime = (now - previewStartedAt) / 1000;
+      renderPreviewFrame(previewAnimationTime);
+      lastPreviewRenderAt = now;
+    }
+
     animationFrameId = requestAnimationFrame(tick);
   };
 
@@ -330,6 +344,7 @@ function stopAnimationLoop() {
     animationFrameId = null;
   }
   previewAnimationTime = 0;
+  lastPreviewRenderAt = 0;
 }
 
 async function handleMotionExport(format) {
