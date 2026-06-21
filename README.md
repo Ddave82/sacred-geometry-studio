@@ -4,7 +4,7 @@ Sacred Geometry Studio is a polished dark-mode creative tool for generating proc
 
 **Live demo:** [ddave82.github.io/sacred-geometry-studio](https://ddave82.github.io/sacred-geometry-studio/)
 
-![Sacred Geometry Studio preview](docs/preview.svg)
+![Sacred Geometry Studio preview](docs/preview.png)
 
 ## What It Does
 
