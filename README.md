@@ -21,6 +21,7 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 - Mood presets with curated palettes and background styles
 - Deterministic random designs from a reusable seed
 - Compact motion system with animated preview
+- Geometry-aware animation presets that modulate internal radii, points, petals, rings, and lattice structure
 - Local preset save, load, and delete via `localStorage`
 - SVG export
 - PNG export at `1024`, `2048`, and `4096` px
@@ -53,7 +54,7 @@ The editor exposes practical controls for producing finished artwork rather than
 - Pattern-specific symmetry controls
 - Independent overlay pattern, size, complexity, symmetry, rotation, and opacity
 - Background presets, colors, vignette, and subtle grain
-- Animation preset, duration, video FPS, GIF FPS, motion strength, GIF pixel size, preview toggle, and export format buttons
+- Animation preset, duration, video FPS, GIF FPS, motion depth, GIF pixel size, preview toggle, and export format buttons
 
 Controls that do not apply to a selected pattern are disabled instead of pretending to change the geometry. For example, Metatron's Cube has fixed six-fold symmetry, while Radial Mandala and Star Grid expose free symmetry control.
 

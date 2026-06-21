@@ -50,34 +50,40 @@ function renderFlowerOfLife(context, options) {
   const { cx, cy, maxRadius } = context;
   const rings = Math.round(options.complexity);
   const circleRadius = (maxRadius * (options.scale / 100)) / (rings + 1.15);
-  const centers = hexCenters(rings, circleRadius, cx, cy);
+  const centers = hexCenters(rings, circleRadius, cx, cy).map((point, index) => {
+    const layer = Math.round(Math.hypot(point.x - cx, point.y - cy) / Math.max(1, circleRadius));
+    return warpPoint(context, options, point, index, layer);
+  });
   const attrs = commonAttrs(options);
-  const cells = centers.map((point) => circle(point.x, point.y, circleRadius, attrs)).join('');
+  const cells = centers
+    .map((point, index) => circle(point.x, point.y, pulseRadius(circleRadius, options, index, index % Math.max(1, rings), 0.8), attrs))
+    .join('');
 
   return patternGroup(context, options, `${cells}${centerEmphasis(context, options, circleRadius * 0.28)}`);
 }
 
 function renderSeedOfLife(context, options) {
   const { cx, cy, maxRadius } = context;
-  const radius = maxRadius * (options.scale / 100) * 0.42;
+  const radius = pulseRadius(maxRadius * (options.scale / 100) * 0.42, options, 0, 0, 0.7);
+  const orbitRadius = motionRadius(radius, options, 0, 1, 0.7);
   const attrs = commonAttrs(options);
   const circles = [circle(cx, cy, radius, attrs)];
 
   for (let index = 0; index < 6; index += 1) {
-    const point = polar(cx, cy, radius, index * 60);
-    circles.push(circle(point.x, point.y, radius, attrs));
+    const point = motionPolar(context, options, orbitRadius, index * 60, index, 1);
+    circles.push(circle(point.x, point.y, pulseRadius(radius, options, index, 1, 0.65), attrs));
   }
 
   if (options.complexity > 2) {
     const ringAttrs = { ...attrs, stroke: options.secondaryColor, strokeOpacity: options.strokeOpacity * 0.58, fill: 'none' };
-    circles.push(polygon(Array.from({ length: 6 }, (_, index) => polar(cx, cy, radius, index * 60)), ringAttrs));
-    circles.push(circle(cx, cy, radius * 2, ringAttrs));
+    circles.push(polygon(Array.from({ length: 6 }, (_, index) => motionPolar(context, options, orbitRadius, index * 60, index, 2)), ringAttrs));
+    circles.push(circle(cx, cy, pulseRadius(radius * 2, options, 0, 2, 0.5), ringAttrs));
   }
 
   if (options.complexity > 4) {
     for (let index = 0; index < 12; index += 1) {
-      const point = polar(cx, cy, radius * 1.48, index * 30);
-      circles.push(circle(point.x, point.y, radius * 0.48, { ...attrs, strokeOpacity: options.strokeOpacity * 0.45 }));
+      const point = motionPolar(context, options, radius * 1.48, index * 30, index, 3);
+      circles.push(circle(point.x, point.y, pulseRadius(radius * 0.48, options, index, 3, 0.9), { ...attrs, strokeOpacity: options.strokeOpacity * 0.45 }));
     }
   }
 
@@ -88,39 +94,39 @@ function renderMetatronsCube(context, options) {
   const { cx, cy, maxRadius } = context;
   const complexity = Math.max(1, Math.min(7, Math.round(options.complexity)));
   const designRadius = maxRadius * (options.scale / 100);
-  const circleRadius = designRadius * 0.18;
-  const inner = designRadius * 0.23;
-  const outer = designRadius * 0.46;
-  const middle = designRadius * 0.36;
-  const halo = designRadius * 0.68;
+  const circleRadius = pulseRadius(designRadius * 0.18, options, 0, 0, 0.45);
+  const inner = motionRadius(designRadius * 0.23, options, 0, 1, 0.9);
+  const outer = motionRadius(designRadius * 0.46, options, 1, 2, 0.75);
+  const middle = motionRadius(designRadius * 0.36, options, 2, 3, 0.7);
+  const halo = motionRadius(designRadius * 0.68, options, 3, 4, 0.55);
   const centerPoint = { id: 'center', x: cx, y: cy, radius: circleRadius };
   const innerPoints = Array.from({ length: 6 }, (_, index) => ({
-    ...polar(cx, cy, inner, index * 60),
+    ...motionPolar(context, options, inner, index * 60, index, 1),
     id: `inner-${index}`,
-    radius: circleRadius,
+    radius: pulseRadius(circleRadius, options, index, 1, 0.45),
   }));
   const outerPoints =
     complexity >= 3
       ? Array.from({ length: 6 }, (_, index) => ({
-          ...polar(cx, cy, outer, index * 60 + 30),
+          ...motionPolar(context, options, outer, index * 60 + 30, index, 2),
           id: `outer-${index}`,
-          radius: circleRadius,
+          radius: pulseRadius(circleRadius, options, index, 2, 0.55),
         }))
       : [];
   const middlePoints =
     complexity >= 5
       ? Array.from({ length: 6 }, (_, index) => ({
-          ...polar(cx, cy, middle, index * 60),
+          ...motionPolar(context, options, middle, index * 60, index, 3),
           id: `middle-${index}`,
-          radius: circleRadius * 0.42,
+          radius: pulseRadius(circleRadius * 0.42, options, index, 3, 0.85),
         }))
       : [];
   const haloPoints =
     complexity >= 6
       ? Array.from({ length: 12 }, (_, index) => ({
-          ...polar(cx, cy, halo, index * 30 + 15),
+          ...motionPolar(context, options, halo, index * 30 + 15, index, 4),
           id: `halo-${index}`,
-          radius: circleRadius * 0.32,
+          radius: pulseRadius(circleRadius * 0.32, options, index, 4, 1),
         }))
       : [];
   const points = [centerPoint, ...innerPoints, ...outerPoints, ...middlePoints, ...haloPoints];
@@ -216,28 +222,28 @@ function renderMetatronsCube(context, options) {
 
 function renderVesicaPiscis(context, options) {
   const { cx, cy, maxRadius } = context;
-  const radius = maxRadius * (options.scale / 100) * 0.43;
-  const offset = radius * 0.58;
+  const radius = pulseRadius(maxRadius * (options.scale / 100) * 0.43, options, 0, 0, 0.75);
+  const offset = motionRadius(radius * 0.58, options, 0, 1, 1);
   const repetitions = Math.max(1, Math.min(12, Math.round(options.complexity + 1)));
   const attrs = commonAttrs(options);
   const pieces = [];
 
   for (let index = 0; index < repetitions; index += 1) {
-    const angle = (360 / repetitions) * index;
-    const left = polar(cx, cy, offset, angle - 90);
-    const right = polar(cx, cy, offset, angle + 90);
-    pieces.push(circle(left.x, left.y, radius, attrs));
-    pieces.push(circle(right.x, right.y, radius, { ...attrs, stroke: options.secondaryColor, strokeOpacity: options.strokeOpacity * 0.72 }));
+    const angle = (360 / repetitions) * index + motionAngleOffset(options, index, 1, 0.55);
+    const left = motionPolar(context, options, offset, angle - 90, index, 1);
+    const right = motionPolar(context, options, offset, angle + 90, index, 2);
+    pieces.push(circle(left.x, left.y, pulseRadius(radius, options, index, 1, 0.65), attrs));
+    pieces.push(circle(right.x, right.y, pulseRadius(radius, options, index, 2, 0.65), { ...attrs, stroke: options.secondaryColor, strokeOpacity: options.strokeOpacity * 0.72 }));
   }
 
-  pieces.push(circle(cx, cy, radius * 1.15, { ...attrs, fill: 'none', strokeOpacity: options.strokeOpacity * 0.38 }));
+  pieces.push(circle(cx, cy, pulseRadius(radius * 1.15, options, 0, 3, 0.5), { ...attrs, fill: 'none', strokeOpacity: options.strokeOpacity * 0.38 }));
 
   return patternGroup(context, options, `${pieces.join('')}${centerEmphasis(context, options, radius * 0.1)}`);
 }
 
 function renderSriYantra(context, options) {
   const { cx, cy, maxRadius } = context;
-  const radius = maxRadius * (options.scale / 100) * 0.88;
+  const radius = pulseRadius(maxRadius * (options.scale / 100) * 0.88, options, 0, 0, 0.35);
   const attrs = commonAttrs(options);
   const secondary = {
     ...attrs,
@@ -259,26 +265,31 @@ function renderSriYantra(context, options) {
     [0.17, 0.02],
   ];
 
-  up.slice(0, Math.min(up.length, Math.max(2, options.complexity))).forEach(([scale, offset]) => {
-    triangles.push(polygon(trianglePoints(cx, cy + radius * offset, radius * scale, -90), attrs));
+  up.slice(0, Math.min(up.length, Math.max(2, options.complexity))).forEach(([scale, offset], index) => {
+    const layerRadius = pulseRadius(radius * scale, options, index, 1, 0.65);
+    const layerOffset = offset + motionWave(options, index, 1) * 0.018 * motionStrength(options);
+    triangles.push(polygon(trianglePoints(cx, cy + radius * layerOffset, layerRadius, -90 + motionAngleOffset(options, index, 1, 0.45)), attrs));
   });
-  down.slice(0, Math.min(down.length, Math.max(2, options.complexity + 1))).forEach(([scale, offset]) => {
-    triangles.push(polygon(trianglePoints(cx, cy + radius * offset, radius * scale, 90), secondary));
+  down.slice(0, Math.min(down.length, Math.max(2, options.complexity + 1))).forEach(([scale, offset], index) => {
+    const layerRadius = pulseRadius(radius * scale, options, index, 2, 0.65);
+    const layerOffset = offset - motionWave(options, index, 2) * 0.018 * motionStrength(options);
+    triangles.push(polygon(trianglePoints(cx, cy + radius * layerOffset, layerRadius, 90 - motionAngleOffset(options, index, 2, 0.45)), secondary));
   });
 
   const rings = [
-    circle(cx, cy, radius * 0.86, { ...secondary, fill: 'none', strokeOpacity: options.strokeOpacity * 0.42 }),
-    circle(cx, cy, radius * 0.64, { ...attrs, fill: 'none', strokeOpacity: options.strokeOpacity * 0.38 }),
+    circle(cx, cy, pulseRadius(radius * 0.86, options, 0, 3, 0.45), { ...secondary, fill: 'none', strokeOpacity: options.strokeOpacity * 0.42 }),
+    circle(cx, cy, pulseRadius(radius * 0.64, options, 1, 3, 0.5), { ...attrs, fill: 'none', strokeOpacity: options.strokeOpacity * 0.38 }),
   ];
 
   if (options.complexity > 3) {
     const petals = [];
     const count = Math.max(5, Math.round(options.symmetry));
     for (let index = 0; index < count; index += 1) {
-      petals.push(ellipse(cx, cy - radius * 0.72, radius * 0.075, radius * 0.18, {
+      const petalLength = pulseRadius(radius * 0.18, options, index, 4, 1.1);
+      petals.push(ellipse(cx, cy - motionRadius(radius * 0.72, options, index, 4, 0.55), radius * 0.075, petalLength, {
         ...secondary,
         fillOpacity: options.fillOpacity * 0.75,
-        transform: `rotate(${number((360 / count) * index)} ${number(cx)} ${number(cy)})`,
+        transform: `rotate(${number((360 / count) * index + motionAngleOffset(options, index, 4, 0.6))} ${number(cx)} ${number(cy)})`,
       }));
     }
     rings.push(...petals);
@@ -295,7 +306,7 @@ function renderSriYantra(context, options) {
 
 function renderRadialMandala(context, options) {
   const { cx, cy, maxRadius } = context;
-  const radius = maxRadius * (options.scale / 100) * 0.9;
+  const radius = pulseRadius(maxRadius * (options.scale / 100) * 0.9, options, 0, 0, 0.35);
   const count = Math.round(options.symmetry);
   const layers = Math.round(options.complexity);
   const attrs = commonAttrs(options);
@@ -303,16 +314,17 @@ function renderRadialMandala(context, options) {
   const pieces = [];
 
   for (let layer = 1; layer <= layers; layer += 1) {
-    const layerRadius = (radius / (layers + 0.7)) * layer;
-    const petalLength = radius / (layers + 2.2);
-    const petalWidth = petalLength * (0.24 + layer * 0.025);
+    const layerRadius = motionRadius((radius / (layers + 0.7)) * layer, options, layer, layer, 0.9);
+    const petalLength = pulseRadius(radius / (layers + 2.2), options, layer, layer, 1);
+    const petalWidth = pulseRadius(petalLength * (0.24 + layer * 0.025), options, layer, layer + 1, 0.7);
     const layerAttrs = layer % 2 === 0 ? secondary : attrs;
 
     for (let index = 0; index < count; index += 1) {
-      pieces.push(ellipse(cx, cy - layerRadius, petalWidth, petalLength, {
+      const petalRadius = motionRadius(layerRadius, options, index, layer, 0.6);
+      pieces.push(ellipse(cx, cy - petalRadius, petalWidth, petalLength, {
         ...layerAttrs,
         fillOpacity: options.fillOpacity * 0.9,
-        transform: `rotate(${number((360 / count) * index)} ${number(cx)} ${number(cy)})`,
+        transform: `rotate(${number((360 / count) * index + motionAngleOffset(options, index, layer, 0.7))} ${number(cx)} ${number(cy)})`,
       }));
     }
 
@@ -324,7 +336,7 @@ function renderRadialMandala(context, options) {
 
 function renderStarGrid(context, options) {
   const { cx, cy, maxRadius } = context;
-  const radius = maxRadius * (options.scale / 100) * 0.9;
+  const radius = pulseRadius(maxRadius * (options.scale / 100) * 0.9, options, 0, 0, 0.45);
   const count = Math.round(options.symmetry);
   const rings = Math.round(options.complexity);
   const attrs = commonAttrs(options);
@@ -337,8 +349,10 @@ function renderStarGrid(context, options) {
   const pieces = [];
 
   for (let ringIndex = 1; ringIndex <= rings; ringIndex += 1) {
-    const ringRadius = (radius / rings) * ringIndex;
-    const vertices = Array.from({ length: count }, (_, index) => polar(cx, cy, ringRadius, (360 / count) * index));
+    const ringRadius = motionRadius((radius / rings) * ringIndex, options, ringIndex, ringIndex, 0.95);
+    const vertices = Array.from({ length: count }, (_, index) =>
+      motionPolar(context, options, ringRadius, (360 / count) * index, index, ringIndex),
+    );
     const step = Math.max(2, Math.floor(count / 2) - (ringIndex % 3));
 
     pieces.push(polygon(vertices, ringIndex % 2 === 0 ? secondary : { ...attrs, fill: 'none' }));
@@ -355,6 +369,68 @@ function patternGroup(context, options, content) {
   const { cx, cy } = context;
   const filter = options.glowStrength > 0 ? ` filter="url(#${options.glowId})"` : '';
   return `<g opacity="${number(options.opacity ?? 1)}" transform="rotate(${number(options.rotation)} ${number(cx)} ${number(cy)})"${filter}>${content}</g>`;
+}
+
+function motionPolar(context, options, radius, degrees, index = 0, layer = 0) {
+  const animatedRadius = motionRadius(radius, options, index, layer, 0.75);
+  const animatedAngle = degrees + motionAngleOffset(options, index, layer, 0.55);
+  return polar(context.cx, context.cy, animatedRadius, animatedAngle);
+}
+
+function warpPoint(context, options, point, index = 0, layer = 0) {
+  const motion = getMotion(options);
+  if (!motion) return point;
+
+  const dx = point.x - context.cx;
+  const dy = point.y - context.cy;
+  const distance = Math.hypot(dx, dy);
+  if (distance <= 0.001) return point;
+
+  const normalized = distance / Math.max(1, context.maxRadius);
+  const angle = Math.atan2(dy, dx);
+  const wave = motionWave(options, index, layer, normalized * 2.1);
+  const radial = distance * (1 + motion.nodeWave * wave);
+  const twist = ((motion.twistDegrees * normalized * Math.sin(motion.phase + layer * 0.42)) / 180) * Math.PI;
+  const nextAngle = angle + twist;
+
+  return {
+    x: context.cx + Math.cos(nextAngle) * radial,
+    y: context.cy + Math.sin(nextAngle) * radial,
+  };
+}
+
+function pulseRadius(radius, options, index = 0, layer = 0, amount = 1) {
+  const motion = getMotion(options);
+  if (!motion) return radius;
+  const factor = 1 + motion.radiusWave * amount * motionWave(options, index, layer);
+  return Math.max(0.001, radius * factor);
+}
+
+function motionRadius(radius, options, index = 0, layer = 0, amount = 1) {
+  const motion = getMotion(options);
+  if (!motion) return radius;
+  const factor = 1 + motion.radialWave * amount * motionWave(options, index, layer, 0.6);
+  return Math.max(0.001, radius * factor);
+}
+
+function motionAngleOffset(options, index = 0, layer = 0, amount = 1) {
+  const motion = getMotion(options);
+  if (!motion) return 0;
+  return motion.angleWave * amount * Math.sin(motion.phase + index * 0.37 + layer * 0.81);
+}
+
+function motionWave(options, index = 0, layer = 0, offset = 0) {
+  const motion = getMotion(options);
+  if (!motion) return 0;
+  return Math.sin(motion.phase + offset + index * 0.73 + layer * 1.11);
+}
+
+function motionStrength(options) {
+  return getMotion(options)?.strength ?? 0;
+}
+
+function getMotion(options) {
+  return options.motion?.strength ? options.motion : null;
 }
 
 function commonAttrs(options) {

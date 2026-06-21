@@ -135,7 +135,7 @@ export const DEFAULT_STATE = {
   aspectRatio: 'square',
   exportSize: 2048,
   animationPreviewEnabled: false,
-  animationPreset: 'cosmic-spin',
+  animationPreset: 'geometry-bloom',
   animationDuration: 6,
   animationFps: 30,
   animationStrength: 60,

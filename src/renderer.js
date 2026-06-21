@@ -40,6 +40,7 @@ export function renderArtworkSvg(state, options = {}) {
     glowId,
     centerEmphasis: renderState.centerEmphasis,
     symmetry: renderState.symmetry,
+    motion: renderState.motion ?? null,
     opacity: 1,
   };
   const background = renderBackground(context, backgroundId, vignetteId, marbleId, grainId, renderState);
@@ -59,6 +60,7 @@ export function renderArtworkSvg(state, options = {}) {
         strokeOpacity: Math.min(1, renderState.strokeOpacity * 0.82),
         opacity: renderState.overlayOpacity,
         centerEmphasis: false,
+        motion: renderState.motion ? createOverlayMotion(renderState.motion) : null,
       })
     : '';
   const centerLayer = renderState.centerSymbolEnabled
@@ -78,6 +80,17 @@ export function renderArtworkSvg(state, options = {}) {
       ${centerLayer}
     </g>
   </svg>`;
+}
+
+function createOverlayMotion(motion) {
+  return {
+    ...motion,
+    phase: motion.phase + Math.PI,
+    layerPhase: motion.layerPhase + Math.PI * 0.7,
+    cycle: -motion.cycle,
+    twistDegrees: -motion.twistDegrees * 0.82,
+    angleWave: -motion.angleWave * 0.8,
+  };
 }
 
 export function getExportDimensions(state) {
