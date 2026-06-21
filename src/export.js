@@ -1,5 +1,5 @@
 import { getSupportedVideoType, supportsVideoExport } from './animation.js';
-import { createGifEncoder, imageDataToRgb332Indices } from './gif.js';
+import { collectPaletteSamples, createAdaptivePalette, createGifEncoder, createPaletteMapper } from './gif.js';
 import { getExportDimensions, renderArtworkSvg } from './renderer.js';
 
 const GIF_MAX_FRAMES = 180;
@@ -121,16 +121,42 @@ export async function exportGif(state, { onProgress } = {}) {
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
-  const encoder = createGifEncoder(width, height, { delayCs });
+  const gifState = { ...state, grain: false };
+  const histogram = new Map();
+  const sampleStride = getGifSampleStride(width, height, totalFrames);
 
   for (let frame = 0; frame < totalFrames; frame += 1) {
-    await drawSvgFrame(context, state, width, height, frame / fps, frame);
+    await drawSvgFrame(context, gifState, width, height, frame / fps, frame);
     const imageData = context.getImageData(0, 0, width, height);
-    encoder.addFrame(imageDataToRgb332Indices(imageData.data));
+    collectPaletteSamples(imageData.data, histogram, { stride: sampleStride });
     onProgress?.({
-      progress: (frame + 1) / totalFrames,
+      progress: ((frame + 1) / totalFrames) * 0.28,
       extension: 'gif',
       requestedExtension: 'gif',
+      stage: 'palette',
+      frame: frame + 1,
+      totalFrames,
+      fps,
+      width,
+      height,
+    });
+
+    if (frame % 4 === 3) await wait(0);
+  }
+
+  const palette = createAdaptivePalette(histogram);
+  const mapImageData = createPaletteMapper(palette);
+  const encoder = createGifEncoder(width, height, { delayCs, palette });
+
+  for (let frame = 0; frame < totalFrames; frame += 1) {
+    await drawSvgFrame(context, gifState, width, height, frame / fps, frame);
+    const imageData = context.getImageData(0, 0, width, height);
+    encoder.addFrame(mapImageData(imageData.data));
+    onProgress?.({
+      progress: 0.28 + ((frame + 1) / totalFrames) * 0.72,
+      extension: 'gif',
+      requestedExtension: 'gif',
+      stage: 'encode',
       frame: frame + 1,
       totalFrames,
       fps,
@@ -184,6 +210,11 @@ function getCappedDimensions({ width, height }, maxDimension) {
     width: Math.max(1, Math.round(width * scale)),
     height: Math.max(1, Math.round(height * scale)),
   };
+}
+
+function getGifSampleStride(width, height, totalFrames) {
+  const targetSamples = 180_000;
+  return Math.max(1, Math.ceil((width * height * totalFrames) / targetSamples));
 }
 
 function wait(milliseconds) {

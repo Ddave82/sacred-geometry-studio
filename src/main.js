@@ -380,11 +380,16 @@ async function handleMotionExport(format) {
 }
 
 function handleMotionExportProgress(button, format) {
-  return ({ progress, fps, width, height }) => {
+  return ({ progress, fps, width, height, stage }) => {
     const percent = Math.round(progress * 100);
     button.textContent = `${percent}%`;
-    elements.videoExportStatus.textContent =
-      format === 'gif' ? `Rendering GIF ${width}x${height} / ${fps}fps` : `Rendering ${format.toUpperCase()}`;
+    if (format === 'gif') {
+      const label = stage === 'palette' ? 'Sampling GIF palette' : 'Rendering GIF';
+      elements.videoExportStatus.textContent = `${label} ${width}x${height} / ${fps}fps`;
+      return;
+    }
+
+    elements.videoExportStatus.textContent = `Rendering ${format.toUpperCase()}`;
   };
 }
 
