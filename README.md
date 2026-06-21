@@ -50,7 +50,7 @@ The editor exposes practical controls for producing finished artwork rather than
 - Stroke width, color, opacity, and glow
 - Secondary color
 - Fill and fill opacity
-- Center emphasis
+- Center emphasis and animated center symbol layer
 - Pattern-specific symmetry controls
 - Independent overlay pattern, size, complexity, symmetry, rotation, and opacity
 - Background presets, colors, vignette, and subtle grain

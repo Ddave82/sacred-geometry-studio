@@ -22,23 +22,41 @@ export function renderPattern(patternId, context, options) {
 
 export function renderCenterSymbol(context, options) {
   const { cx, cy, maxRadius } = context;
-  const size = maxRadius * 0.115 * (options.scale / 100);
+  const size = pulseRadius(maxRadius * 0.115 * (options.scale / 100), options, 0, 8, 1.25);
   const stroke = commonAttrs(options);
-  const small = size * 0.5;
+  const small = pulseRadius(size * 0.5, options, 1, 9, 1.4);
+  const triangleRadius = pulseRadius(size * 1.2, options, 2, 10, 1.1);
+  const triangleRotation = motionAngleOffset(options, 0, 9, 1.25);
+  const counterRotation = -motionAngleOffset(options, 1, 10, 0.8);
+  const coreRadius = pulseRadius(Math.max(2, size * 0.12), options, 3, 11, 1.8);
   const triangle = polygon(
     [
-      polar(cx, cy, size * 1.2, -90),
-      polar(cx, cy, size * 1.2, 30),
-      polar(cx, cy, size * 1.2, 150),
+      polar(cx, cy, triangleRadius, -90 + triangleRotation),
+      polar(cx, cy, triangleRadius, 30 + triangleRotation),
+      polar(cx, cy, triangleRadius, 150 + triangleRotation),
     ],
     stroke,
+  );
+  const counterTriangle = polygon(
+    [
+      polar(cx, cy, triangleRadius * 0.72, 90 + counterRotation),
+      polar(cx, cy, triangleRadius * 0.72, 210 + counterRotation),
+      polar(cx, cy, triangleRadius * 0.72, 330 + counterRotation),
+    ],
+    {
+      ...stroke,
+      stroke: options.secondaryColor,
+      strokeOpacity: options.strokeOpacity * 0.52,
+      fill: 'none',
+    },
   );
 
   return `<g opacity="${number(options.opacity ?? 1)}">
     ${circle(cx, cy, size, stroke)}
     ${circle(cx, cy, small, { ...stroke, stroke: options.secondaryColor, strokeOpacity: 0.72, fill: 'none' })}
     ${triangle}
-    ${circle(cx, cy, Math.max(2, size * 0.12), {
+    ${counterTriangle}
+    ${circle(cx, cy, coreRadius, {
       stroke: 'none',
       fill: options.strokeColor,
       fillOpacity: Math.min(1, options.strokeOpacity + 0.08),
