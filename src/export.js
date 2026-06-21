@@ -62,7 +62,7 @@ export async function exportVideo(state, { format = 'webm', allowFallback = fals
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext('2d', { alpha: true });
-  const stream = canvas.captureStream(fps);
+  const stream = canvas.captureStream(0);
   const chunks = [];
   const recorderOptions = {
     videoBitsPerSecond: estimateBitrate(width, height, fps),

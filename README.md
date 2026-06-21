@@ -22,6 +22,7 @@ The interface is intentionally dark, calm, and studio-like so the artwork stays 
 - Deterministic random designs from a reusable seed
 - Compact motion system with animated preview
 - Geometry-aware animation presets that modulate internal radii, points, petals, rings, and lattice structure
+- Loop-safe motion math for seamless animation exports
 - Local preset save, load, and delete via `localStorage`
 - SVG export
 - PNG export at `1024`, `2048`, and `4096` px

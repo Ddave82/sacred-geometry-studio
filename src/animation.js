@@ -55,6 +55,7 @@ export function getAnimatedState(state, timeSeconds = 0) {
   if (strength <= 0) return state;
 
   const progress = normalizedProgress(timeSeconds, duration);
+  const phase = progress * Math.PI * 2;
   const cycle = Math.sin(progress * Math.PI * 2);
   const pulse = (cycle + 1) / 2;
   const animated = {
@@ -66,22 +67,22 @@ export function getAnimatedState(state, timeSeconds = 0) {
     case 'geometry-bloom':
       animated.scale = clamp(state.scale + cycle * 4.5 * strength, 45, 130);
       animated.overlayScale = clamp(state.overlayScale + Math.sin(progress * Math.PI * 4) * 7 * strength, 20, 220);
-      animated.rotation = wrapDegrees(state.rotation + progress * 42 * strength);
-      animated.overlayRotation = wrapDegrees(state.overlayRotation - progress * 88 * strength);
+      animated.rotation = wrapDegrees(state.rotation + Math.sin(phase * 2) * 24 * strength);
+      animated.overlayRotation = wrapDegrees(state.overlayRotation - Math.sin(phase) * 48 * strength);
       animated.glowStrength = clamp(state.glowStrength + pulse * 4 * strength, 0, 20);
       animated.fillOpacity = clamp(state.fillOpacity + pulse * 0.08 * strength, 0, 0.58);
       break;
     case 'harmonic-weave':
       animated.rotation = wrapDegrees(state.rotation + Math.sin(progress * Math.PI * 2) * 24 * strength);
-      animated.overlayRotation = wrapDegrees(state.overlayRotation - progress * 180 * strength);
+      animated.overlayRotation = wrapDegrees(state.overlayRotation - loopTurns(progress, 1));
       animated.overlayOpacity = clamp(state.overlayOpacity + Math.sin(progress * Math.PI * 4) * 0.08 * strength, 0.02, 0.85);
       animated.glowStrength = clamp(state.glowStrength + pulse * 2.8 * strength, 0, 18);
       break;
     case 'lattice-morph':
       animated.scale = clamp(state.scale + Math.sin(progress * Math.PI * 4) * 5 * strength, 45, 132);
       animated.overlayScale = clamp(state.overlayScale - cycle * 12 * strength, 20, 220);
-      animated.rotation = wrapDegrees(state.rotation + progress * 76 * strength);
-      animated.overlayRotation = wrapDegrees(state.overlayRotation + progress * 124 * strength);
+      animated.rotation = wrapDegrees(state.rotation + loopTurns(progress, 1));
+      animated.overlayRotation = wrapDegrees(state.overlayRotation + loopTurns(progress, 2));
       animated.strokeOpacity = clamp(state.strokeOpacity - 0.05 * strength + pulse * 0.09 * strength, 0.12, 1);
       break;
     case 'temple-breath':
@@ -97,8 +98,8 @@ export function getAnimatedState(state, timeSeconds = 0) {
       animated.fillOpacity = clamp(state.fillOpacity + pulse * 0.08 * strength, 0, 0.55);
       break;
     case 'orbital-overlay':
-      animated.rotation = wrapDegrees(state.rotation + progress * 48 * strength);
-      animated.overlayRotation = wrapDegrees(state.overlayRotation - progress * 360 * strength);
+      animated.rotation = wrapDegrees(state.rotation + loopTurns(progress, 1));
+      animated.overlayRotation = wrapDegrees(state.overlayRotation - loopTurns(progress, 1));
       animated.overlayOpacity = clamp(state.overlayOpacity + cycle * 0.08 * strength, 0.02, 0.85);
       break;
     case 'pulse-bloom':
@@ -108,15 +109,15 @@ export function getAnimatedState(state, timeSeconds = 0) {
       animated.overlayOpacity = clamp(state.overlayOpacity + pulse * 0.12 * strength, 0.02, 0.9);
       break;
     case 'slow-reveal':
-      animated.rotation = wrapDegrees(state.rotation + progress * 95 * strength);
+      animated.rotation = wrapDegrees(state.rotation + loopTurns(progress, 1));
       animated.strokeOpacity = clamp(state.strokeOpacity * (0.48 + pulse * 0.58 * strength), 0.08, 1);
       animated.overlayOpacity = clamp(state.overlayOpacity * (0.36 + pulse * 0.74 * strength), 0.02, 0.9);
       animated.glowStrength = clamp(state.glowStrength + cycle * 2.8 * strength, 0, 18);
       break;
     case 'cosmic-spin':
     default:
-      animated.rotation = wrapDegrees(state.rotation + progress * 360 * strength);
-      animated.overlayRotation = wrapDegrees(state.overlayRotation - progress * 234 * strength);
+      animated.rotation = wrapDegrees(state.rotation + loopTurns(progress, 1));
+      animated.overlayRotation = wrapDegrees(state.overlayRotation - loopTurns(progress, 1));
       animated.glowStrength = clamp(state.glowStrength + pulse * 2.5 * strength, 0, 18);
       break;
   }
@@ -252,6 +253,10 @@ export function supportsVideoExport() {
 
 function normalizedProgress(timeSeconds, duration) {
   return ((timeSeconds % duration) + duration) % duration / duration;
+}
+
+function loopTurns(progress, turns = 1) {
+  return progress * 360 * turns;
 }
 
 function clamp(value, min, max) {
